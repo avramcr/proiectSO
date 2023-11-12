@@ -3,7 +3,7 @@ Inaltimea este: 65536
 Lungimea este: 83886080
 Dimensiunea totala a fisierului este: 7372938
 Identificatorul utilizatorului: 1000
-Ultima modificare: Sat Nov 11 11:11:53 2023
+Ultima modificare: Sun Nov 12 17:14:16 2023
 Numarul de legaturi este: 1
 Drepturile de acces ale owner-ului: RW-
 Drepturile de acces ale grupului: RW-
