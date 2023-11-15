@@ -45,7 +45,7 @@ void fisier(const char *caleFisier) {
     }
 
     Header header;
-    ssize_t citeste = read(input_destination, &header, sizeof(Header));
+    ssize_t citeste = read(input_destination, &header, sizeof(Header)-2);
     if (citeste == -1) {
         perror("Eroare citire fisier header");
         close(input_destination);
@@ -158,93 +158,167 @@ void director(const char *caleDirector) {
         perror("Eroare la deschiderea directorului");
         exit(EXIT_FAILURE);
     }
- 
+
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
             char buffer[4096];
             snprintf(buffer, sizeof(buffer), "%s/%s", caleDirector, entry->d_name);
- 
+
             if (entry->d_type == DT_REG) {
                 fisier(buffer);
-            } else if (entry->d_type == DT_DIR)
-	      {
+            } else if (entry->d_type == DT_DIR) {
                 struct stat dir_info;
                 if (stat(buffer, &dir_info) == -1) {
                     perror("Eroare la primirea informatii director");
                     closedir(dir);
                     exit(EXIT_FAILURE);
                 }
-		 char user[4];
-    if (dir_info.st_mode & S_IRUSR) {
-        user[0] = 'R';
-    } else {
-        user[0] = '-';
-    }
 
-    if (dir_info.st_mode & S_IWUSR) {
-        user[1] = 'W';
-    }else {
-        user[1] = '-';
-    }
+                char user[4];
+                if (dir_info.st_mode & S_IRUSR) {
+                    user[0] = 'R';
+                } else {
+                    user[0] = '-';
+                }
 
-    if (dir_info.st_mode & S_IXUSR) {
-        user[2] = 'X';
-    } else {
-        user[2] = '-';
-    }
+                if (dir_info.st_mode & S_IWUSR) {
+                    user[1] = 'W';
+                } else {
+                    user[1] = '-';
+                }
 
-    user[3] = '\0';
+                if (dir_info.st_mode & S_IXUSR) {
+                    user[2] = 'X';
+                } else {
+                    user[2] = '-';
+                }
 
-    char grup[4];
-    if (dir_info.st_mode & S_IRGRP) {
-        grup[0] = 'R';
-    } else {
-        grup[0] = '-';
-    }
+                user[3] = '\0';
 
-    if (dir_info.st_mode & S_IWGRP) {
-        grup[1] = 'W';
-    } else {
-        grup[1] = '-';
-    }
+                char grup[4];
+                if (dir_info.st_mode & S_IRGRP) {
+                    grup[0] = 'R';
+                } else {
+                    grup[0] = '-';
+                }
 
-    if (dir_info.st_mode & S_IXGRP) {
-        grup[2] = 'X';
-    } else {
-        grup[2] = '-';
-    }
-    grup[3] = '\0';
+                if (dir_info.st_mode & S_IWGRP) {
+                    grup[1] = 'W';
+                } else {
+                    grup[1] = '-';
+                }
 
-    char altii[4];
-    if (dir_info.st_mode & S_IROTH) {
-        altii[0] = 'R';
-    } else {
-        altii[0] = '-';
-    }
+                if (dir_info.st_mode & S_IXGRP) {
+                    grup[2] = 'X';
+                } else {
+                    grup[2] = '-';
+                }
+                grup[3] = '\0';
 
-    if (dir_info.st_mode & S_IWOTH) {
-        altii[1] = 'W';
-    } else {
-        altii[1] = '-';
-    }
+                char altii[4];
+                if (dir_info.st_mode & S_IROTH) {
+                    altii[0] = 'R';
+                } else {
+                    altii[0] = '-';
+                }
 
-    if (dir_info.st_mode & S_IXOTH) {
-        altii[2] = 'X';
-    } else {
-        altii[2] = '-';
-    }
-    altii[3] = '\0';
- 
-    snprintf(buffer, sizeof(buffer), "Nume director: %s\nIdentificatorul utilizatorului: %d\nDrepturi de acces user: %s\nDrepturi de acces grup: %s\nDrepturi de acces altii: %s\n",entry->d_name, dir_info.st_uid, user, grup, altii);
-    printf("%s",buffer);
-  director(buffer);
+                if (dir_info.st_mode & S_IWOTH) {
+                    altii[1] = 'W';
+                } else {
+                    altii[1] = '-';
+                }
+
+                if (dir_info.st_mode & S_IXOTH) {
+                    altii[2] = 'X';
+                } else {
+                    altii[2] = '-';
+                }
+                altii[3] = '\0';
+
+                snprintf(buffer, sizeof(buffer), "Nume director: %s\nIdentificatorul utilizatorului: %d\nDrepturi de acces user: %s\nDrepturi de acces grup: %s\nDrepturi de acces altii: %s\n", entry->d_name, dir_info.st_uid, user, grup, altii);
+                printf("%s", buffer);
+                director(buffer);
+            } else if (entry->d_type == DT_LNK)
+	      {
+                struct stat info_lnk;
+                if (lstat(buffer, &info_lnk) == -1) {
+                    perror("Eroare primire informatie link");
+                    closedir(dir);
+                    exit(EXIT_FAILURE);
+                }
+		char owner[4];
+                if (info_lnk.st_mode & S_IRUSR) {
+                    owner[0] = 'R';
+                } else {
+                    owner[0] = '-';
+                }
+
+                if (info_lnk.st_mode & S_IWUSR) {
+                    owner[1] = 'W';
+                } else {
+                    owner[1] = '-';
+                }
+
+                if (info_lnk.st_mode & S_IXUSR) {
+                    owner[2] = 'X';
+                } else {
+                    owner[2] = '-';
+                }
+
+                owner[3] = '\0';
+
+		char group[4];
+                if (info_lnk.st_mode & S_IRGRP) {
+                    group[0] = 'R';
+                } else {
+                    group[0] = '-';
+                }
+
+                if (info_lnk.st_mode & S_IWGRP) {
+                    group[1] = 'W';
+                } else {
+                   group[1] = '-';
+                }
+
+                if (info_lnk.st_mode & S_IXGRP) {
+                    group[2] = 'X';
+                } else {
+                    group[2] = '-';
+                }
+                group[3] = '\0';
+		
+		char other[4];
+                if (info_lnk.st_mode & S_IROTH) {
+                    other[0] = 'R';
+                } else {
+                    other[0] = '-';
+                }
+
+                if (info_lnk.st_mode & S_IWOTH) {
+                    other[1] = 'W';
+                } else {
+                    other[1] = '-';
+                }
+
+                if (info_lnk.st_mode & S_IXOTH) {
+                    other[2] = 'X';
+                } else {
+                    other[2] = '-';
+                }
+                other[3] = '\0'; 
+
+
+                snprintf(buffer, sizeof(buffer), "Nume legatura: %s\nDimensiune Legatura:%ld\nDrepturi de acces user legatura:%s\nDrepturi de acces grup legatura:%s\nDrepturi de acces altii legatura:%s\n", entry->d_name,info_lnk.st_size,owner,group,other);
+            
             }
         }
     }
- 
+
     closedir(dir);
 }
+
+
 
 void aflare(const char *cale) {
     struct stat informatii;
@@ -267,6 +341,8 @@ int main(int argc, char *argv[]) {
     }
 
     aflare(argv[1]);
+  
 
     return 0;
-}
+} 
+  
