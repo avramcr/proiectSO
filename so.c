@@ -312,6 +312,10 @@ void director(const char *caleDirector) {
                 snprintf(buffer, sizeof(buffer), "Nume legatura: %s\nDimensiune Legatura:%ld\nDrepturi de acces user legatura:%s\nDrepturi de acces grup legatura:%s\nDrepturi de acces altii legatura:%s\n", entry->d_name,info_lnk.st_size,owner,group,other);
             
             }
+	    else
+	      {
+		return ;
+	      }
         }
     }
 
