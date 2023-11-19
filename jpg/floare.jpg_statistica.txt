@@ -1,0 +1,8 @@
+Numele fisierului este: floare.jpg
+Dimensiunea totala a fisierului este: 715240
+Identificatorul utilizatorului: 1000
+Ultima modificare: Sat Nov 18 23:41:04 2023
+Numarul de legaturi este: 1
+Drepturile de acces ale owner-ului: RW-
+Drepturile de acces ale grupului: RW-
+Drepturile de acces altii: R--

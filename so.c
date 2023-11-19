@@ -45,7 +45,7 @@ void fisier(const char *caleFisier, const char *directorIesire) {
         exit(EXIT_FAILURE);
     }
 
-    Header header;
+    Header header; 
     ssize_t citeste = read(input_destination, &header, sizeof(Header) - 2);
     if (citeste == -1) {
         perror("Eroare citire fisier header");
@@ -175,7 +175,7 @@ void director(const char *caleDirector, const char *directorIesire) {
 	      pid_t pid;
 	      pid = fork();
 
-                if (pid == -1) {
+                if (pid == -1) { 
                     perror("Procesul nu s-a creat");
                     exit(EXIT_FAILURE);
                 } else if (pid == 0) {
