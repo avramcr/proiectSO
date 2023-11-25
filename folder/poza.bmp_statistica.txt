@@ -1,9 +1,9 @@
 Numele pozei este: poza.bmp
-Inaltimea este: 1280
-Lungimea este: 1920
-Dimensiunea totala a fisierului este: 7372938
+Inaltimea este: 426
+Lungimea este: 640
+Dimensiunea totala a fisierului este: 818058
 Identificatorul utilizatorului: 1000
-Ultima modificare: Sun Nov 12 17:14:16 2023
+Ultima modificare: Fri Nov 24 12:41:49 2023
 Numarul de legaturi este: 1
 Drepturile de acces ale owner-ului: RW-
 Drepturile de acces ale grupului: RW-
