@@ -15,7 +15,7 @@ typedef struct {
     uint32_t file_size;
     uint32_t reserved;
     uint32_t data_offset;
-} Header;
+} Header; 
  
 typedef struct {
     uint32_t size;
@@ -35,84 +35,50 @@ typedef struct {
     uint8_t green;
     uint8_t blue;
 } Pixel;
-
-void convertire(const char *caleFisier, const char *directorIesire) {
-    int input_destination = open(caleFisier, O_RDONLY);
-    if (input_destination == -1) {
+void convertire(const char *caleFisier) {
+    int fisier = open(caleFisier, O_RDWR);
+    if (fisier == -1) {
         perror("Eroare deschidere fisier");
         exit(EXIT_FAILURE);
-    }
+    } 
 
     Header header;
-    ssize_t citeste = read(input_destination, &header, sizeof(Header) - 2);
+    ssize_t citeste = read(fisier, &header, sizeof(Header) - 2);
     if (citeste == -1) {
         perror("Eroare citire fisier header");
-        close(input_destination);
+        close(fisier);
         exit(EXIT_FAILURE);
     }
 
     HeaderInfo info;
-    citeste = read(input_destination, &info, sizeof(HeaderInfo));
+    citeste = read(fisier, &info, sizeof(HeaderInfo));
     if (citeste == -1) {
         perror("Eroare la citire fisier info");
-        close(input_destination);
-        exit(EXIT_FAILURE);
-    } 
-
-    char numePoza[4096];
-    snprintf(numePoza, sizeof(numePoza), "%s/poza.bmp", directorIesire);
-
-    
-    int output_destination = open(numePoza, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-    if (output_destination == -1) {
-        perror("Eroare la deschiderea fisierului de output");
-        close(input_destination);
+        close(fisier);
         exit(EXIT_FAILURE);
     }
 
-   
-    ssize_t scrie = write(output_destination, &header, sizeof(Header) - 2);
-    if (scrie == -1) {
-        perror("Eroare la scriere in fisier");
-        close(output_destination);
-        exit(EXIT_FAILURE);
-    }
-
-    scrie = write(output_destination, &info, sizeof(HeaderInfo));
-    if (scrie == -1) {
-        perror("Eroare la scriere in fisier");
-        close(output_destination);
-        close(input_destination);
-        exit(EXIT_FAILURE);
-    }
     Pixel pixel;
     for (uint32_t i = 0; i < info.height; i++) {
-    for (uint32_t j = 0; j < info.width; j++) {
-        citeste = read(input_destination, &pixel, sizeof(Pixel));
-        if (citeste == -1) {
-            perror("Eroare la citire pixel");
-            close(output_destination);
-            exit(EXIT_FAILURE);
-        }
-
-        uint8_t pixelGray = (uint8_t)(0.299 * pixel.red + 0.587 * pixel.green + 0.114 * pixel.blue);
-        for (int k = 0; k < 3; k++) {
-            scrie = write(output_destination, &pixelGray, sizeof(pixelGray));
-            if (scrie == -1) {
-                perror("Eroare la scriere pixel");
-                close(output_destination);
+        for (uint32_t j = 0; j < info.width; j++) {
+            citeste = read(fisier, &pixel, sizeof(Pixel));
+            if (citeste == -1) {
+                perror("Eroare la citire pixel");
+                close(fisier);
                 exit(EXIT_FAILURE);
             }
+ 
+            uint8_t pixelGray = (uint8_t)(0.299 * pixel.red + 0.587 * pixel.green + 0.114 * pixel.blue);
+
+	    lseek(fisier,-3, SEEK_CUR);
+            write(fisier, &pixelGray, sizeof(pixelGray));
+            write(fisier, &pixelGray, sizeof(pixelGray));
+            write(fisier, &pixelGray, sizeof(pixelGray));
         } 
-    }
-} 
+    } 
 
-
-    close(output_destination);
-    close(input_destination);
+    close(fisier); 
 }
-
-
 void fisier(const char *caleFisier, const char *directorIesire) {
     int input_destination = open(caleFisier, O_RDONLY);
     if (input_destination == -1) {
@@ -219,7 +185,7 @@ void fisier(const char *caleFisier, const char *directorIesire) {
             perror("Procesul nu s-a creat");
             exit(EXIT_FAILURE);
         } else if (pid == 0) {
-	    convertire(caleFisier,directorIesire);
+	    convertire(caleFisier);
 	  
         } else {
             int status;
@@ -453,4 +419,4 @@ int main(int argc, char *argv[]) {
     aflare(argv[1], argv[2]);
  
     return 0;
-}
+} 
