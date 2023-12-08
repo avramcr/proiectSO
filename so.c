@@ -79,6 +79,27 @@ void convertire(const char *caleFisier,char c) {
 
     close(fisier); 
 }
+void continut(int pfd[2],const char *caleFisier)
+{
+  int input = open(caleFisier, O_RDONLY);
+    if (input == -1) {
+        perror("Eroare deschidere fisier");
+        exit(EXIT_FAILURE);
+    }
+
+    char buffer[4096];
+    ssize_t citeste;
+    while ((citeste = read(input, buffer, sizeof(buffer))) > 0)
+      {
+        ssize_t scris = write(pfd[1], buffer, citeste);
+        if (scris == -1) {
+            perror("Eroare la scrierea in pipe");
+            exit(EXIT_FAILURE);
+        }
+    }
+  close(input);
+  close(pfd[1]);
+}
 void fisier(const char *caleFisier, const char *directorIesire,char c) {
     int input_destination = open(caleFisier, O_RDONLY);
     if (input_destination == -1) {
@@ -194,18 +215,37 @@ void fisier(const char *caleFisier, const char *directorIesire,char c) {
 	 snprintf(buffer, sizeof(buffer), "Numele pozei este: %s\nInaltimea este: %d\nLungimea este: %d\nDimensiunea totala a fisierului este: %ld\nIdentificatorul utilizatorului: %d\nUltima modificare: %sNumarul de legaturi este: %ld\nDrepturile de acces ale owner-ului: %s\nDrepturile de acces ale grupului: %s\nDrepturile de acces altii: %s\n",
                  caleFisier, info.height, info.width, total_size, owner, ctime(&modificare), legaturi, user, grup, altii);
     } else {
-        pid_t pid_fiu = fork();
+      char proba[4096];
+        int pfd[2];
+        if (pipe(pfd) == -1) //scriere 1 si citire 0
+	  {
+            perror("Eroare la crearea pipe-ului");
+            exit(EXIT_FAILURE);
+        }
+        pid_t pid_fiu;
+	pid_fiu = fork(); 
 
         if (pid_fiu == -1) {
             perror("Procesul fiu nu s-a creat");
             exit(EXIT_FAILURE);
-        } else if (pid_fiu == 0) {
-	  printf("Vedem ce facem noi");
-        exit(EXIT_SUCCESS);
-        } else {
-            int status_fiu;
-            waitpid(pid_fiu, &status_fiu, 0);
-            printf("S-a încheiat procesul fiu cu PID-ul %d și codul %d\n", pid_fiu, WEXITSTATUS(status_fiu));
+        } else if (pid_fiu == 0)
+	  {
+	    close(pfd[1]);
+	    ssize_t citeste=read(pfd[0],proba,strlen(buffer));
+	    if(citeste==-1)
+	      {
+		perror("Eroare la citire pipe");
+		  exit(EXIT_FAILURE);
+	      }
+	    close(pfd[0]);
+	    
+	  } else {
+	    close(pfd[0]);
+	    continut(pfd,caleFisier);
+	    close(pfd[1]);
+	    int status_fiu;
+	    waitpid(pid_fiu,&status_fiu,0);
+	    printf("S-a încheiat procesul fiu cu PID-ul %d și codul %d\n", pid_fiu, WEXITSTATUS(status_fiu));
         }
 	 snprintf(buffer, sizeof(buffer), "Numele fisierului este: %s\nDimensiunea totala a fisierului este: %ld\nIdentificatorul utilizatorului: %d\nUltima modificare: %sNumarul de legaturi este: %ld\nDrepturile de acces ale owner-ului: %s\nDrepturile de acces ale grupului: %s\nDrepturile de acces altii: %s\n",
              caleFisier, total_size, owner, ctime(&modificare), legaturi, user, grup, altii);
