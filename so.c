@@ -35,7 +35,7 @@ typedef struct {
     uint8_t green;
     uint8_t blue;
 } Pixel;
-void convertire(const char *caleFisier) {
+void convertire(const char *caleFisier,char c) {
     int fisier = open(caleFisier, O_RDWR);
     if (fisier == -1) {
         perror("Eroare deschidere fisier");
@@ -79,7 +79,7 @@ void convertire(const char *caleFisier) {
 
     close(fisier); 
 }
-void fisier(const char *caleFisier, const char *directorIesire) {
+void fisier(const char *caleFisier, const char *directorIesire,char c) {
     int input_destination = open(caleFisier, O_RDONLY);
     if (input_destination == -1) {
         perror("Eroare deschidere fisier");
@@ -176,51 +176,62 @@ void fisier(const char *caleFisier, const char *directorIesire) {
     altii[3] = '\0';
  
     char buffer[4096];
- 
+
     if (strstr(caleFisier, ".bmp") != NULL) {
         pid_t pid;
         pid = fork();
- 
+
         if (pid == -1) {
             perror("Procesul nu s-a creat");
             exit(EXIT_FAILURE);
         } else if (pid == 0) {
-	    convertire(caleFisier);
-	  
+            convertire(caleFisier, c);
         } else {
             int status;
-            wait(&status);
-             printf("S-a încheiat procesul cu PID-ul %d și codul %d\n", pid, WEXITSTATUS(status));
+            wait(&status); 
+            printf("S-a încheiat procesul cu PID-ul %d și codul %d\n", pid, WEXITSTATUS(status));
         }
- 
-        snprintf(buffer, sizeof(buffer), "Numele pozei este: %s\nInaltimea este: %d\nLungimea este: %d\nDimensiunea totala a fisierului este: %ld\nIdentificatorul utilizatorului: %d\nUltima modificare: %sNumarul de legaturi este: %ld\nDrepturile de acces ale owner-ului: %s\nDrepturile de acces ale grupului: %s\nDrepturile de acces altii: %s\n",
+	 snprintf(buffer, sizeof(buffer), "Numele pozei este: %s\nInaltimea este: %d\nLungimea este: %d\nDimensiunea totala a fisierului este: %ld\nIdentificatorul utilizatorului: %d\nUltima modificare: %sNumarul de legaturi este: %ld\nDrepturile de acces ale owner-ului: %s\nDrepturile de acces ale grupului: %s\nDrepturile de acces altii: %s\n",
                  caleFisier, info.height, info.width, total_size, owner, ctime(&modificare), legaturi, user, grup, altii);
     } else {
-        snprintf(buffer, sizeof(buffer), "Numele fisierului este: %s\nDimensiunea totala a fisierului este: %ld\nIdentificatorul utilizatorului: %d\nUltima modificare: %sNumarul de legaturi este: %ld\nDrepturile de acces ale owner-ului: %s\nDrepturile de acces ale grupului: %s\nDrepturile de acces altii: %s\n",
-                 caleFisier, total_size, owner, ctime(&modificare), legaturi, user, grup, altii);
-    }
- 
+        pid_t pid_fiu = fork();
+
+        if (pid_fiu == -1) {
+            perror("Procesul fiu nu s-a creat");
+            exit(EXIT_FAILURE);
+        } else if (pid_fiu == 0) {
+	  printf("Vedem ce facem noi");
+        exit(EXIT_SUCCESS);
+        } else {
+            int status_fiu;
+            waitpid(pid_fiu, &status_fiu, 0);
+            printf("S-a încheiat procesul fiu cu PID-ul %d și codul %d\n", pid_fiu, WEXITSTATUS(status_fiu));
+        }
+	 snprintf(buffer, sizeof(buffer), "Numele fisierului este: %s\nDimensiunea totala a fisierului este: %ld\nIdentificatorul utilizatorului: %d\nUltima modificare: %sNumarul de legaturi este: %ld\nDrepturile de acces ale owner-ului: %s\nDrepturile de acces ale grupului: %s\nDrepturile de acces altii: %s\n",
+             caleFisier, total_size, owner, ctime(&modificare), legaturi, user, grup, altii);
+    } 
+
     char fisierulMeuDeStatistica[4096];
     snprintf(fisierulMeuDeStatistica, sizeof(fisierulMeuDeStatistica), "%s/%s_statistica.txt", directorIesire, caleFisier);
- 
+
     int output_destination = open(fisierulMeuDeStatistica, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
     if (output_destination == -1) {
         perror("Eroare la deschiderea fisierului de output");
         close(input_destination);
         exit(EXIT_FAILURE);
     }
- 
+
     ssize_t scrie = write(output_destination, buffer, strlen(buffer));
     if (scrie == -1) {
         perror("Eroare la scriere in fisier");
         close(output_destination);
         exit(EXIT_FAILURE);
     }
- 
+
     close(output_destination);
     close(input_destination);
 }
-void director(const char *caleDirector, const char *directorIesire) {
+void director(const char *caleDirector, const char *directorIesire,char c) {
     DIR *dir = opendir(caleDirector);
     if (dir == NULL) {
         perror("Eroare la deschiderea directorului");
@@ -241,7 +252,7 @@ void director(const char *caleDirector, const char *directorIesire) {
                     perror("Procesul nu s-a creat");
                     exit(EXIT_FAILURE);
                 } else if (pid == 0) {
-                    fisier(buffer, directorIesire);
+		  fisier(buffer, directorIesire,c);
                 } else {
                     int status;
                     wait(&status);
@@ -254,7 +265,7 @@ void director(const char *caleDirector, const char *directorIesire) {
                     closedir(dir);
                     exit(EXIT_FAILURE);
                 }
- 
+  
                 char user[4];
                 if (dir_info.st_mode & S_IRUSR) {
                     user[0] = 'R';
@@ -318,7 +329,7 @@ void director(const char *caleDirector, const char *directorIesire) {
  
                 snprintf(buffer, sizeof(buffer), "Nume director: %s\nIdentificatorul utilizatorului: %d\nDrepturi de acces user: %s\nDrepturi de acces grup: %s\nDrepturi de acces altii: %s\n", entry->d_name, dir_info.st_uid, user, grup, altii);
                 printf("%s", buffer);
-                director(buffer, directorIesire);
+                director(buffer, directorIesire,c);
             } else if (entry->d_type == DT_LNK) {
                 struct stat info_lnk;
                 if (lstat(buffer, &info_lnk) == -1) {
@@ -397,7 +408,7 @@ void director(const char *caleDirector, const char *directorIesire) {
  
     closedir(dir);
 }
-void aflare(const char *cale, const char *directorIesire) {
+void aflare(const char *cale, const char *directorIesire,char c) {
     struct stat informatii;
     if (stat(cale, &informatii) == -1) {
         perror("Eroare la primirea informatii");
@@ -405,18 +416,19 @@ void aflare(const char *cale, const char *directorIesire) {
     }
  
     if (S_ISDIR(informatii.st_mode)) {
-        director(cale, directorIesire);
+      director(cale, directorIesire,c);
     } else {
-        fisier(cale, directorIesire);
+      fisier(cale, directorIesire,c);
     }
 }
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
+    if (argc != 4) {
         printf("Număr incorect de argumente\n");
         exit(EXIT_FAILURE);
     }
+    char caracter = argv[3][0];
  
-    aflare(argv[1], argv[2]);
+    aflare(argv[1], argv[2], caracter);
  
     return 0;
 } 
