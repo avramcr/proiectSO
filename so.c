@@ -1,3 +1,23 @@
+Se va scrie un program în limbajul C ce va prelucra un fișier de intrare ce reprezinta o imagine in format BMP și va realiza o serie de statistici pe baza acestui fișier. Programul
+va primi un parametru și se va apela după cum urmează: ./program <fisier_intrare>
+Programul va verifica faptul că a primit un singur argument, precum și tipul acestuia, iar în caz contrar va afișa un mesaj de eroare ”Usage ./program <fisier_intrare>”.
+Programul trebuie sa citeasca header-ul fisierului BMP și sa extraga valoarea înălțimii,respectiv a lungimii pentru imaginea data.
+Programul va crea un fișier cu numele statistica.txt în care vor fi scrise următoarele informații:
+nume fisier: poza.bmp
+inaltime: 1920
+lungime: 1280
+dimensiune: <dimensiune in octeti>
+identificatorul utilizatorului: <user id>
+timpul ultimei modificari: 28.10.2023
+contorul de legaturi: <numar legaturi>
+drepturi de acces user: RWX
+drepturi de acces grup: R–-
+drepturi de acces altii: ---
+Se vor folosi doar apeluri sistem pentru lucrul cu fișierele (open, read, write, close, stat,
+fstat, lstat... etc)
+
+
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
